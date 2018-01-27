@@ -55,15 +55,17 @@ Building
 To build you will need:
 
  * A Java compiler compatible with Java 1.7
- * The Android SDK with platform 24 (Nougat) installed
+ * The Android SDK with platform 26 (Oreo) installed
 
 Building from command-line #1
 --------------------------
+> Note: at the time of this writing, the current version of Gradle ([4.5](https://gradle.org/releases/)) is not compatible with the current version of JDK ([9.0.4](http://www.oracle.com/technetwork/java/javase/downloads/jdk9-downloads-3848520.html)). To have the build succeed, use JDK version [1.8.0_162](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html).
  * `gradle build` to build the APK
  * Optional: `gradle installDebug` to install the APK to a connected device
  
 Building from command-line #2
 --------------------------
+> Note: at the time of this writing, the current version fo the Android SDK tools are not compatible with ant, see https://stackoverflow.com/questions/42912824/the-ant-folder-is-suddenly-missing-from-android-sdk-did-google-remove-it
  * `android update project --path .` to generate local.properties
  * `ant debug` to build the APK at bin/VanillaMusic-debug.apk
  * Optional: `ant installd` to install the APK to a connected device
