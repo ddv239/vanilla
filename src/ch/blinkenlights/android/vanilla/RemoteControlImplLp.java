@@ -27,7 +27,14 @@ import android.graphics.Bitmap;
 import android.media.MediaMetadata;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
+import android.os.ResultReceiver;
 import android.view.KeyEvent;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.os.Bundle;
+import android.net.Uri;
+import android.media.Rating;
+
 
 @TargetApi(21)
 public class RemoteControlImplLp implements RemoteControl.Client {
@@ -66,21 +73,163 @@ public class RemoteControlImplLp implements RemoteControl.Client {
 		mMediaSession = new MediaSession(mContext, "Vanilla Music");
 
 		mMediaSession.setCallback(new MediaSession.Callback() {
+			/**
+			 * Called when a controller has sent a command to this session.
+			 * The owner of the session may handle custom commands but is not
+			 * required to.
+			 *
+			 * @param command The command name.
+			 * @param args Optional parameters for the command, may be null.
+			 * @param cb A result receiver to which a result may be sent by the command, may be null.
+			 */
+			public void onCommand(@NonNull String command, @Nullable Bundle args,
+								  @Nullable ResultReceiver cb) {
+			}
+
+			/**
+			 * Called when a media button is pressed and this session has the
+			 * highest priority or a controller sends a media button event to the
+			 * session. The default behavior will call the relevant method if the
+			 * action for it was set.
+			 * <p>
+			 * The intent will be of type {@link Intent#ACTION_MEDIA_BUTTON} with a
+			 * KeyEvent in {@link Intent#EXTRA_KEY_EVENT}
+			 *
+			 * @param mediaButtonIntent an intent containing the KeyEvent as an
+			 *            extra
+			 * @return True if the event was handled, false otherwise.
+			 */
+			public boolean onMediaButtonEvent(@NonNull Intent mediaButtonIntent) {
+				// TODO: implement ability to interpret multiple quick presses of a single "Play/Pause" button to simulate absent buttons such as "Skip" etc.
+				return super.onMediaButtonEvent(mediaButtonIntent);
+			}
+
+			/**
+			 * Override to handle requests to prepare playback. During the preparation, a session should
+			 * not hold audio focus in order to allow other sessions play seamlessly. The state of
+			 * playback should be updated to {@link PlaybackState#STATE_PAUSED} after the preparation is
+			 * done.
+			 */
+			public void onPrepare() {
+			}
+
+			/**
+			 * Override to handle requests to prepare for playing a specific mediaId that was provided
+			 * by your app's {@link MediaBrowserService}. During the preparation, a session should not
+			 * hold audio focus in order to allow other sessions play seamlessly. The state of playback
+			 * should be updated to {@link PlaybackState#STATE_PAUSED} after the preparation is done.
+			 * The playback of the prepared content should start in the implementation of
+			 * {@link #onPlay}. Override {@link #onPlayFromMediaId} to handle requests for starting
+			 * playback without preparation.
+			 */
+			public void onPrepareFromMediaId(String mediaId, Bundle extras) {
+			}
+
+			/**
+			 * Override to handle requests to prepare playback from a search query. An empty query
+			 * indicates that the app may prepare any music. The implementation should attempt to make a
+			 * smart choice about what to play. During the preparation, a session should not hold audio
+			 * focus in order to allow other sessions play seamlessly. The state of playback should be
+			 * updated to {@link PlaybackState#STATE_PAUSED} after the preparation is done. The playback
+			 * of the prepared content should start in the implementation of {@link #onPlay}. Override
+			 * {@link #onPlayFromSearch} to handle requests for starting playback without preparation.
+			 */
+			public void onPrepareFromSearch(String query, Bundle extras) {
+			}
+
+			/**
+			 * Override to handle requests to prepare a specific media item represented by a URI.
+			 * During the preparation, a session should not hold audio focus in order to allow
+			 * other sessions play seamlessly. The state of playback should be updated to
+			 * {@link PlaybackState#STATE_PAUSED} after the preparation is done.
+			 * The playback of the prepared content should start in the implementation of
+			 * {@link #onPlay}. Override {@link #onPlayFromUri} to handle requests
+			 * for starting playback without preparation.
+			 */
+			public void onPrepareFromUri(Uri uri, Bundle extras) {
+			}
+
 			@Override
 			public void onPlay() {
 				MediaButtonReceiver.processKey(mContext, new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_HEADSETHOOK));
 			}
+
+			/**
+			 * Override to handle requests to begin playback from a search query. An
+			 * empty query indicates that the app may play any music. The
+			 * implementation should attempt to make a smart choice about what to
+			 * play.
+			 */
+			public void onPlayFromSearch(String query, Bundle extras) {
+			}
+
+			/**
+			 * Override to handle requests to play a specific mediaId that was
+			 * provided by your app's {@link MediaBrowserService}.
+			 */
+			public void onPlayFromMediaId(String mediaId, Bundle extras) {
+			}
+
+			/**
+			 * Override to handle requests to play a specific media item represented by a URI.
+			 */
+			public void onPlayFromUri(Uri uri, Bundle extras) {
+			}
+
+			/**
+			 * Override to handle requests to play an item with a given id from the
+			 * play queue.
+			 */
+			public void onSkipToQueueItem(long id) {
+			}
+
 			@Override
 			public void onPause() {
 				MediaButtonReceiver.processKey(mContext, new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_HEADSETHOOK));
 			}
+
 			@Override
 			public void onSkipToNext() {
 				MediaButtonReceiver.processKey(mContext, new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_NEXT));
 			}
+
 			@Override
 			public void onSkipToPrevious() {
 				MediaButtonReceiver.processKey(mContext, new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PREVIOUS));
+			}
+
+			/**
+			 * Override to handle requests to fast forward.
+			 */
+			public void onFastForward() {
+			}
+
+			/**
+			 * Override to handle requests to rewind.
+			 */
+			public void onRewind() {
+			}
+
+			/**
+			 * Override to handle requests to stop playback.
+			 */
+			public void onStop() {
+			}
+
+			/**
+			 * Override to handle requests to seek to a specific position in ms.
+			 *
+			 * @param pos New position to move to, in milliseconds.
+			 */
+			public void onSeekTo(long pos) {
+			}
+
+			/**
+			 * Override to handle the item being rated.
+			 *
+			 * @param rating
+			 */
+			public void onSetRating(@NonNull Rating rating) {
 			}
 		});
 
@@ -156,7 +305,7 @@ public class RemoteControlImplLp implements RemoteControl.Client {
 		}
 
 		int playbackState = (isPlaying ? PlaybackState.STATE_PLAYING : PlaybackState.STATE_PAUSED);
-		long actions = (PlaybackState.ACTION_PLAY_PAUSE | PlaybackState.ACTION_SKIP_TO_NEXT | PlaybackState.ACTION_SKIP_TO_PREVIOUS);
+		long actions = (PlaybackState.ACTION_STOP | PlaybackState.ACTION_PLAY_PAUSE | PlaybackState.ACTION_SKIP_TO_NEXT | PlaybackState.ACTION_SKIP_TO_PREVIOUS | PlaybackState.ACTION_SEEK_TO);
 		actions |= (isPlaying ? PlaybackState.ACTION_PAUSE : PlaybackState.ACTION_PLAY);
 
 		long position = PlaybackService.hasInstance() ? PlaybackService.get(null).getPosition() : 0;
