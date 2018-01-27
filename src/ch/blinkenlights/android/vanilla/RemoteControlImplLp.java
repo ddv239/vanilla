@@ -67,11 +67,11 @@ public class RemoteControlImplLp implements RemoteControl.Client {
 
 		mMediaSession.setCallback(new MediaSession.Callback() {
 			@Override
-			public void onPause() {
+			public void onPlay() {
 				MediaButtonReceiver.processKey(mContext, new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_HEADSETHOOK));
 			}
 			@Override
-			public void onPlay() {
+			public void onPause() {
 				MediaButtonReceiver.processKey(mContext, new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_HEADSETHOOK));
 			}
 			@Override
@@ -111,6 +111,14 @@ public class RemoteControlImplLp implements RemoteControl.Client {
 		mShowCover = -1;
 	}
 
+	// HACK: This static is only needed as I found no other way to force correct progress display in the following scenario:
+	// 1. Vanilla is started after a "Force stop"
+	// 2. BlueSoleil 10.0.497.0 is connected
+	// 3. I scroll playback to the middle of a song and press Play
+	// without this second, artificially delayed, "setPlaybackState" call, the progress of the song
+	// will start from the beginning instead of the actual middle position.
+	private static boolean playedUpdateCalled = false;
+
 	/**
 	 * Update the remote with new metadata.
 	 * {@link #registerRemote()} must have been called
@@ -120,7 +128,7 @@ public class RemoteControlImplLp implements RemoteControl.Client {
 	 * @param state PlaybackService state, used to determine playback state.
 	 * @param keepPaused whether or not to keep the remote updated in paused mode
 	 */
-	public void updateRemote(Song song, int state, boolean keepPaused) {
+	public void updateRemote(Song song, int state, boolean keepPaused, long updateTime) {
 		MediaSession session = mMediaSession;
 		if (session == null)
 			return;
@@ -151,10 +159,22 @@ public class RemoteControlImplLp implements RemoteControl.Client {
 		long actions = (PlaybackState.ACTION_PLAY_PAUSE | PlaybackState.ACTION_SKIP_TO_NEXT | PlaybackState.ACTION_SKIP_TO_PREVIOUS);
 		actions |= (isPlaying ? PlaybackState.ACTION_PAUSE : PlaybackState.ACTION_PLAY);
 
+		long position = PlaybackService.hasInstance() ? PlaybackService.get(null).getPosition() : 0;
+
 		session.setPlaybackState(new PlaybackState.Builder()
-			.setState(playbackState, PlaybackState.PLAYBACK_POSITION_UNKNOWN , 1.0f)
-			.setActions(actions)
-			.build());
+				.setState(playbackState, position, 1.0f, updateTime)
+				.setActions(actions)
+				.build());
 		mMediaSession.setActive(true);
+
+		// HACK: the following repetition of the update broadcast is the only way I found to force correct progress display.
+		// It is only needed the very first time the update is issued in the "played" state in teh process lifetime.
+		if (isPlaying && !playedUpdateCalled) {
+			playedUpdateCalled = true;
+			if (PlaybackService.hasInstance()) {
+				// Experimentally found that a delay of 10 milliseconds would not be reliably sufficient, but 100 seems to work reliably
+				PlaybackService.get(null).broadcastUpdateDelayed(100);
+			}
+		}
 	}
 }
