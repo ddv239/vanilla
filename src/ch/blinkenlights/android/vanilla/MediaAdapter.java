@@ -153,8 +153,7 @@ public class MediaAdapter
 	 * @param activity The LibraryActivity that will contain this adapter - may be null
 	 *
 	 */
-	public MediaAdapter(Context context, int type, Limiter limiter, LibraryActivity activity)
-	{
+	public MediaAdapter(Context context, int type, Limiter limiter, LibraryActivity activity) {
 		mContext = context;
 		mActivity = activity;
 		mType = type;
@@ -171,71 +170,71 @@ public class MediaAdapter
 		String coverCacheKey = BaseColumns._ID;
 
 		switch (type) {
-		case MediaUtils.TYPE_ARTIST:
-			mSource = MediaLibrary.VIEW_ARTISTS;
-			mFields = new String[] { MediaLibrary.ContributorColumns.ARTIST };
-			mFieldKeys = new String[] { MediaLibrary.ContributorColumns.ARTIST_SORT };
-			mSortEntries = new int[] { R.string.title, R.string.date_added };
-			mAdapterSortValues = new String[] { MediaLibrary.ContributorColumns.ARTIST_SORT+" %1$s", MediaLibrary.ContributorColumns.MTIME+" %1$s" };
-			break;
-		case MediaUtils.TYPE_ALBARTIST:
-			mSource = MediaLibrary.VIEW_ALBUMARTISTS;
-			mFields = new String[] { MediaLibrary.ContributorColumns.ALBUMARTIST };
-			mFieldKeys = new String[] { MediaLibrary.ContributorColumns.ALBUMARTIST_SORT };
-			mSortEntries = new int[] { R.string.title, R.string.date_added };
-			mAdapterSortValues = new String[] { MediaLibrary.ContributorColumns.ALBUMARTIST_SORT+" %1$s", MediaLibrary.ContributorColumns.MTIME+" %1$s" };
-			break;
-		case MediaUtils.TYPE_COMPOSER:
-			mSource = MediaLibrary.VIEW_COMPOSERS;
-			mFields = new String[] { MediaLibrary.ContributorColumns.COMPOSER };
-			mFieldKeys = new String[] { MediaLibrary.ContributorColumns.COMPOSER_SORT };
-			mSortEntries = new int[] { R.string.title, R.string.date_added };
-			mAdapterSortValues = new String[] { MediaLibrary.ContributorColumns.COMPOSER_SORT+" %1$s", MediaLibrary.ContributorColumns.MTIME+" %1$s" };
-			break;
-		case MediaUtils.TYPE_ALBUM:
-			mSource = MediaLibrary.VIEW_ALBUMS_ARTISTS;
-			mFields = new String[] { MediaLibrary.AlbumColumns.ALBUM, MediaLibrary.ContributorColumns.ARTIST };
-			mFieldKeys = new String[] { MediaLibrary.AlbumColumns.ALBUM_SORT, MediaLibrary.ContributorColumns.ARTIST_SORT };
-			mSortEntries = new int[] { R.string.title, R.string.artist_album, R.string.year, R.string.date_added };
-			mAdapterSortValues = new String[] { MediaLibrary.AlbumColumns.ALBUM_SORT+" %1$s", MediaLibrary.ContributorColumns.ARTIST_SORT+" %1$s,"+MediaLibrary.AlbumColumns.ALBUM_SORT+" %1$s",
-			                                    MediaLibrary.AlbumColumns.PRIMARY_ALBUM_YEAR+" %1$s", MediaLibrary.AlbumColumns.MTIME+" %1$s" };
-			break;
-		case MediaUtils.TYPE_SONG:
-			mSource = MediaLibrary.VIEW_SONGS_ALBUMS_ARTISTS;
-			mFields = new String[] { MediaLibrary.SongColumns.TITLE, MediaLibrary.AlbumColumns.ALBUM, MediaLibrary.ContributorColumns.ARTIST };
-			mFieldKeys = new String[] { MediaLibrary.SongColumns.TITLE_SORT, MediaLibrary.AlbumColumns.ALBUM_SORT, MediaLibrary.ContributorColumns.ARTIST_SORT };
-			mSortEntries = new int[] { R.string.title, R.string.artist_album_track, R.string.artist_album_title, R.string.album_track, R.string.year, R.string.date_added,
-			                           R.string.song_playcount, R.string.filename };
-			mAdapterSortValues = new String[] { MediaLibrary.SongColumns.TITLE_SORT+" %1$s",
-			                                    MediaLibrary.ContributorColumns.ARTIST_SORT+" %1$s,"+MediaLibrary.AlbumColumns.ALBUM_SORT+" %1$s,"+MediaLibrary.SongColumns.DISC_NUMBER+","+MediaLibrary.SongColumns.SONG_NUMBER,
-			                                    MediaLibrary.ContributorColumns.ARTIST_SORT+" %1$s,"+MediaLibrary.AlbumColumns.ALBUM_SORT+" %1$s,"+MediaLibrary.SongColumns.TITLE_SORT+" %1$s",
-			                                    MediaLibrary.AlbumColumns.ALBUM_SORT+" %1$s,"+MediaLibrary.SongColumns.DISC_NUMBER+","+MediaLibrary.SongColumns.SONG_NUMBER,
-			                                    MediaLibrary.SongColumns.YEAR+" %1$s,"+MediaLibrary.AlbumColumns.ALBUM_SORT+" %1$s,"+MediaLibrary.SongColumns.DISC_NUMBER+","+MediaLibrary.SongColumns.SONG_NUMBER,
-			                                    MediaLibrary.SongColumns.MTIME+" %1$s,"+MediaLibrary.SongColumns.DISC_NUMBER+","+MediaLibrary.SongColumns.SONG_NUMBER,
-			                                    MediaLibrary.SongColumns.PLAYCOUNT+" %1$s,"+MediaLibrary.SongColumns.DISC_NUMBER+","+MediaLibrary.SongColumns.SONG_NUMBER,
-			                                    MediaLibrary.SongColumns.PATH+" %1$s",
-			                                  };
-			// Songs covers are cached per-album
-			mCoverCacheType = MediaUtils.TYPE_ALBUM;
-			coverCacheKey = MediaStore.Audio.Albums.ALBUM_ID;
-			break;
-		case MediaUtils.TYPE_PLAYLIST:
-			mSource = MediaLibrary.TABLE_PLAYLISTS;
-			mFields = new String[] { MediaLibrary.PlaylistColumns.NAME };
-			mFieldKeys = null;
-			mSortEntries = new int[] { R.string.title, R.string.date_added };
-			mAdapterSortValues = new String[] { MediaLibrary.PlaylistColumns.NAME+" %1$s", MediaLibrary.PlaylistColumns._ID+" %1$s" };
-			mExpandable = true;
-			break;
-		case MediaUtils.TYPE_GENRE:
-			mSource = MediaLibrary.TABLE_GENRES;
-			mFields = new String[] { MediaLibrary.GenreColumns._GENRE };
-			mFieldKeys = new String[] { MediaLibrary.GenreColumns._GENRE_SORT };
-			mSortEntries = new int[] { R.string.title };
-			mAdapterSortValues = new String[] { MediaLibrary.GenreColumns._GENRE_SORT+" %1$s" };
-			break;
-		default:
-			throw new IllegalArgumentException("Invalid value for type: " + type);
+			case MediaUtils.TYPE_ARTIST:
+				mSource = MediaLibrary.VIEW_ARTISTS;
+				mFields = new String[]{MediaLibrary.ContributorColumns.ARTIST};
+				mFieldKeys = new String[]{MediaLibrary.ContributorColumns.ARTIST_SORT};
+				mSortEntries = new int[]{R.string.title, R.string.date_added};
+				mAdapterSortValues = new String[]{MediaLibrary.ContributorColumns.ARTIST_SORT + " %1$s", MediaLibrary.ContributorColumns.MTIME + " %1$s"};
+				break;
+			case MediaUtils.TYPE_ALBARTIST:
+				mSource = MediaLibrary.VIEW_ALBUMARTISTS;
+				mFields = new String[]{MediaLibrary.ContributorColumns.ALBUMARTIST};
+				mFieldKeys = new String[]{MediaLibrary.ContributorColumns.ALBUMARTIST_SORT};
+				mSortEntries = new int[]{R.string.title, R.string.date_added};
+				mAdapterSortValues = new String[]{MediaLibrary.ContributorColumns.ALBUMARTIST_SORT + " %1$s", MediaLibrary.ContributorColumns.MTIME + " %1$s"};
+				break;
+			case MediaUtils.TYPE_COMPOSER:
+				mSource = MediaLibrary.VIEW_COMPOSERS;
+				mFields = new String[]{MediaLibrary.ContributorColumns.COMPOSER};
+				mFieldKeys = new String[]{MediaLibrary.ContributorColumns.COMPOSER_SORT};
+				mSortEntries = new int[]{R.string.title, R.string.date_added};
+				mAdapterSortValues = new String[]{MediaLibrary.ContributorColumns.COMPOSER_SORT + " %1$s", MediaLibrary.ContributorColumns.MTIME + " %1$s"};
+				break;
+			case MediaUtils.TYPE_ALBUM:
+				mSource = MediaLibrary.VIEW_ALBUMS_ARTISTS;
+				mFields = new String[]{MediaLibrary.AlbumColumns.ALBUM, MediaLibrary.ContributorColumns.ARTIST};
+				mFieldKeys = new String[]{MediaLibrary.AlbumColumns.ALBUM_SORT, MediaLibrary.ContributorColumns.ARTIST_SORT};
+				mSortEntries = new int[]{R.string.title, R.string.artist_album, R.string.year, R.string.date_added};
+				mAdapterSortValues = new String[]{MediaLibrary.AlbumColumns.ALBUM_SORT + " %1$s", MediaLibrary.ContributorColumns.ARTIST_SORT + " %1$s," + MediaLibrary.AlbumColumns.ALBUM_SORT + " %1$s",
+						MediaLibrary.AlbumColumns.PRIMARY_ALBUM_YEAR + " %1$s", MediaLibrary.AlbumColumns.MTIME + " %1$s"};
+				break;
+			case MediaUtils.TYPE_SONG:
+				mSource = MediaLibrary.VIEW_SONGS_ALBUMS_ARTISTS;
+				mFields = new String[]{MediaLibrary.SongColumns.TITLE, MediaLibrary.AlbumColumns.ALBUM, MediaLibrary.ContributorColumns.ARTIST};
+				mFieldKeys = new String[]{MediaLibrary.SongColumns.TITLE_SORT, MediaLibrary.AlbumColumns.ALBUM_SORT, MediaLibrary.ContributorColumns.ARTIST_SORT};
+				mSortEntries = new int[]{R.string.title, R.string.artist_album_track, R.string.artist_album_title, R.string.album_track, R.string.year, R.string.date_added,
+						R.string.song_playcount, R.string.filename};
+				mAdapterSortValues = new String[]{MediaLibrary.SongColumns.TITLE_SORT + " %1$s",
+						MediaLibrary.ContributorColumns.ARTIST_SORT + " %1$s," + MediaLibrary.AlbumColumns.ALBUM_SORT + " %1$s," + MediaLibrary.SongColumns.DISC_NUMBER + "," + MediaLibrary.SongColumns.SONG_NUMBER,
+						MediaLibrary.ContributorColumns.ARTIST_SORT + " %1$s," + MediaLibrary.AlbumColumns.ALBUM_SORT + " %1$s," + MediaLibrary.SongColumns.TITLE_SORT + " %1$s",
+						MediaLibrary.AlbumColumns.ALBUM_SORT + " %1$s," + MediaLibrary.SongColumns.DISC_NUMBER + "," + MediaLibrary.SongColumns.SONG_NUMBER,
+						MediaLibrary.SongColumns.YEAR + " %1$s," + MediaLibrary.AlbumColumns.ALBUM_SORT + " %1$s," + MediaLibrary.SongColumns.DISC_NUMBER + "," + MediaLibrary.SongColumns.SONG_NUMBER,
+						MediaLibrary.SongColumns.MTIME + " %1$s," + MediaLibrary.SongColumns.DISC_NUMBER + "," + MediaLibrary.SongColumns.SONG_NUMBER,
+						MediaLibrary.SongColumns.PLAYCOUNT + " %1$s," + MediaLibrary.SongColumns.DISC_NUMBER + "," + MediaLibrary.SongColumns.SONG_NUMBER,
+						MediaLibrary.SongColumns.PATH + " %1$s",
+				};
+				// Songs covers are cached per-album
+				mCoverCacheType = MediaUtils.TYPE_ALBUM;
+				coverCacheKey = MediaStore.Audio.Albums.ALBUM_ID;
+				break;
+			case MediaUtils.TYPE_PLAYLIST:
+				mSource = MediaLibrary.TABLE_PLAYLISTS;
+				mFields = new String[]{MediaLibrary.PlaylistColumns.NAME};
+				mFieldKeys = null;
+				mSortEntries = new int[]{R.string.title, R.string.date_added};
+				mAdapterSortValues = new String[]{MediaLibrary.PlaylistColumns.NAME + " %1$s", MediaLibrary.PlaylistColumns._ID + " %1$s"};
+				mExpandable = true;
+				break;
+			case MediaUtils.TYPE_GENRE:
+				mSource = MediaLibrary.TABLE_GENRES;
+				mFields = new String[]{MediaLibrary.GenreColumns._GENRE};
+				mFieldKeys = new String[]{MediaLibrary.GenreColumns._GENRE_SORT};
+				mSortEntries = new int[]{R.string.title};
+				mAdapterSortValues = new String[]{MediaLibrary.GenreColumns._GENRE_SORT + " %1$s"};
+				break;
+			default:
+				throw new IllegalArgumentException("Invalid value for type: " + type);
 		}
 
 

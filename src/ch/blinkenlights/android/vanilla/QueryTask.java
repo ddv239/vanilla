@@ -27,7 +27,7 @@ import android.database.Cursor;
  * Represents a pending query.
  */
 public class QueryTask {
-	public final String table;
+	public final String source;
 	public final String[] projection;
 	public final String selection;
 	public final String[] selectionArgs;
@@ -51,11 +51,11 @@ public class QueryTask {
 	public long data;
 
 	/**
-	 * Create the tasks. All arguments are passed directly to
-	 * MediaLibrary.runQuery().
+	 * Create the task. All arguments are passed directly to
+	 * MediaLibrary.queryLibrary().
 	 */
-	public QueryTask(String table, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-		this.table = table;
+	public QueryTask(String source, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+		this.source = source;
 		this.projection = projection;
 		this.selection = selection;
 		this.selectionArgs = selectionArgs;
@@ -68,6 +68,6 @@ public class QueryTask {
 	 * @param context The Context to use
 	 */
 	public Cursor runQuery(Context context) {
-		return MediaLibrary.queryLibrary(context, table, projection, selection, selectionArgs, sortOrder);
+		return MediaLibrary.queryLibrary(context, source, projection, selection, selectionArgs, sortOrder);
 	}
 }

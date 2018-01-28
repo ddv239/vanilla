@@ -308,14 +308,14 @@ public class MediaLibrary  {
 	 * Perform a media query on the database, returns a cursor
 	 *
 	 * @param context the context to use
-	 * @param table the table to query, one of MediaLibrary.TABLE_*
+	 * @param source the table or view to query, one of MediaLibrary.TABLE_* or MediaLibrary.VIEW_*
 	 * @param projection the columns to returns in this query
 	 * @param selection the selection (WHERE) to use
 	 * @param selectionArgs arguments for the selection
 	 * @param orderBy how the result should be sorted
 	 */
-	public static Cursor queryLibrary(Context context, String table, String[] projection, String selection, String[] selectionArgs, String orderBy) {
-		return getBackend(context).query(false, table, projection, selection, selectionArgs, null, null, orderBy, null);
+	public static Cursor queryLibrary(Context context, String source, String[] projection, String selection, String[] selectionArgs, String orderBy) {
+		return getBackend(context).query(false, source, projection, selection, selectionArgs, null, null, orderBy, null);
 	}
 
 	/**
@@ -615,10 +615,14 @@ public class MediaLibrary  {
 		String ALBUM_SORT = "album_sort";
 		/**
 		 * The primary contributor / artist reference for this album
+		 * This is always the "Album artist" value that is shared by all songs in this album
 		 */
 		String PRIMARY_ARTIST_ID = "primary_artist_id";
 		/**
 		 * The year of this album
+		 * We identify an album by the (labum artist, title) tuple,
+		 * so there is no guarantee that album year is the same across all the songs in the album.
+		 * Therefore, the first year value we happened to encounter became the "primary" one for this album
 		 */
 		String PRIMARY_ALBUM_YEAR = "primary_album_year";
 		/**
