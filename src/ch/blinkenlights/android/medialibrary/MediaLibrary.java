@@ -52,9 +52,10 @@ public class MediaLibrary  {
 	public static final String VIEW_SONGS_ALBUMS_ARTISTS_HUGE = "_songs_albums_artists_huge";
 	public static final String VIEW_PLAYLIST_SONGS            = "_playlists_songs";
 
-	public static final int ROLE_ARTIST                   = 0;
+	public static final int ROLE_ARTISTSLIST              = 0;
 	public static final int ROLE_COMPOSER                 = 1;
 	public static final int ROLE_ALBUMARTIST              = 2;
+	public static final int ROLE_INDIVIDUALARTIST         = 3;
 
 	public static final String PREFERENCES_FILE = "_prefs-v1.obj";
 
@@ -650,18 +651,40 @@ public class MediaLibrary  {
 		 */
 		String MTIME = "mtime";
 
+		// We make a distinction between, and store separately,
+		// - the "artists list" string value of the song (stored as a contributor with role "Artists list") and
+		// - the set of string values representing each of those participating artists (stored as contributors with role "Artist").
+		// Even though typically this list contains only one value in which case that value coincides
+		// with the "artists list" value, to make sure all filtering and displaying logic is correct,
+		// we need to keep this distinction clear.
+		// The artists list is used for displaying a song's property;
+		// the individual artists are used to filter songs.
+
 		/**
-		 * ONLY IN VIEWS - the artist
+		 * ONLY IN VIEWS - the song's artists list
 		 */
-		String ARTIST = "artist";
+		String ARTISTSLIST = "artistslist";
+		/**
+		 * ONLY IN VIEWS - the song's artistslist_sort key
+		 */
+		String ARTISTSLIST_SORT = "artistslist_sort";
+		/**
+		 * ONLY IN VIEWS - the song's artists list id
+		 */
+		String ARTISTSLIST_ID = "artistslist_id";
+
+		/**
+		 * ONLY IN VIEWS - the song's individual participating artist
+		 */
+		String ONEARTIST = "oneartist";
 		/**
 		 * ONLY IN VIEWS - the artist_sort key
 		 */
-		String ARTIST_SORT = "artist_sort";
+		String ONEARTIST_SORT = "oneartist_sort";
 		/**
 		 * ONLY IN VIEWS - the artist id
 		 */
-		String ARTIST_ID = "artist_id";
+		String ONEARTIST_ID = "oneartist_id";
 
 		/**
 		 * ONLY IN VIEWS - the albumartist

@@ -131,12 +131,23 @@ public class MediaSchema {
 			+ " (" + MediaLibrary.PlaylistSongColumns.PLAYLIST_ID + ", " + MediaLibrary.PlaylistSongColumns.SONG_ID + ")"
 			+ ";";
 
+	private static final String NAME_ARTISTSLIST_ALIAS = "_artistslist";
+
+	/**
+	 * Additional columns to select for artists list info
+	 */
+	private static final String VIEW_ARTISTSLIST_SELECT = NAME_ARTISTSLIST_ALIAS + "." + MediaLibrary.ContributorColumns._CONTRIBUTOR + " AS " + MediaLibrary.ContributorColumns.ARTISTSLIST
+			+ "," + NAME_ARTISTSLIST_ALIAS + "." + MediaLibrary.ContributorColumns._CONTRIBUTOR_SORT + " AS " + MediaLibrary.ContributorColumns.ARTISTSLIST_SORT
+			+ "," + NAME_ARTISTSLIST_ALIAS + "." + MediaLibrary.ContributorColumns._ID + " AS " + MediaLibrary.ContributorColumns.ARTISTSLIST_ID;
+
+	private static final String NAME_ONEARTIST_ALIAS = "_oneartist";
+
 	/**
 	 * Additional columns to select for artist info
 	 */
-	private static final String VIEW_ARTIST_SELECT = "_artist." + MediaLibrary.ContributorColumns._CONTRIBUTOR + " AS " + MediaLibrary.ContributorColumns.ARTIST
-			+ ",_artist." + MediaLibrary.ContributorColumns._CONTRIBUTOR_SORT + " AS " + MediaLibrary.ContributorColumns.ARTIST_SORT
-			+ ",_artist." + MediaLibrary.ContributorColumns._ID + " AS " + MediaLibrary.ContributorColumns.ARTIST_ID;
+	private static final String VIEW_ONEARTIST_SELECT = NAME_ONEARTIST_ALIAS + "." + MediaLibrary.ContributorColumns._CONTRIBUTOR + " AS " + MediaLibrary.ContributorColumns.ONEARTIST
+			+ "," + NAME_ONEARTIST_ALIAS + "." + MediaLibrary.ContributorColumns._CONTRIBUTOR_SORT + " AS " + MediaLibrary.ContributorColumns.ONEARTIST_SORT
+			+ "," + NAME_ONEARTIST_ALIAS + "." + MediaLibrary.ContributorColumns._ID + " AS " + MediaLibrary.ContributorColumns.ONEARTIST_ID;
 
 	/**
 	 * Additional columns to select for albumartist info
@@ -189,18 +200,18 @@ public class MediaSchema {
 	 * View which includes album and artist information
 	 */
 	private static final String VIEW_CREATE_ALBUMS_ARTISTS = "CREATE VIEW " + MediaLibrary.VIEW_ALBUMS_ARTISTS + " AS "
-			+ "SELECT *, " + VIEW_ARTIST_SELECT + " FROM " + MediaLibrary.TABLE_ALBUMS
-			+ " LEFT JOIN " + MediaLibrary.TABLE_CONTRIBUTORS + " AS _artist"
-			+ " ON _artist." + MediaLibrary.ContributorColumns._ID + " = " + MediaLibrary.TABLE_ALBUMS + "." + MediaLibrary.AlbumColumns.PRIMARY_ARTIST_ID
+			+ "SELECT *, " + VIEW_ONEARTIST_SELECT + " FROM " + MediaLibrary.TABLE_ALBUMS
+			+ " LEFT JOIN " + MediaLibrary.TABLE_CONTRIBUTORS + " AS " + NAME_ONEARTIST_ALIAS
+			+ " ON " + NAME_ONEARTIST_ALIAS + "." + MediaLibrary.ContributorColumns._ID + " = " + MediaLibrary.TABLE_ALBUMS + "." + MediaLibrary.AlbumColumns.PRIMARY_ARTIST_ID
 			+ " ;";
 
 	/**
 	 * View which includes artist information
 	 */
 	private static final String VIEW_CREATE_ARTISTS = "CREATE VIEW " + MediaLibrary.VIEW_ARTISTS + " AS "
-			+ "SELECT *, " + VIEW_ARTIST_SELECT + " FROM " + MediaLibrary.TABLE_CONTRIBUTORS + " AS _artist WHERE " + MediaLibrary.ContributorColumns._ID + " IN "
+			+ "SELECT *, " + VIEW_ONEARTIST_SELECT + " FROM " + MediaLibrary.TABLE_CONTRIBUTORS + " AS " + NAME_ONEARTIST_ALIAS + " WHERE " + MediaLibrary.ContributorColumns._ID + " IN "
 			+ " (SELECT " + MediaLibrary.ContributorSongColumns._CONTRIBUTOR_ID + " FROM " + MediaLibrary.TABLE_CONTRIBUTORS_SONGS
-			+ " WHERE " + MediaLibrary.ContributorSongColumns.ROLE + "=" + MediaLibrary.ROLE_ARTIST + " GROUP BY " + MediaLibrary.ContributorSongColumns._CONTRIBUTOR_ID + ")"
+			+ " WHERE " + MediaLibrary.ContributorSongColumns.ROLE + "=" + MediaLibrary.ROLE_INDIVIDUALARTIST + " GROUP BY " + MediaLibrary.ContributorSongColumns._CONTRIBUTOR_ID + ")"
 			+ " ;";
 
 	/**

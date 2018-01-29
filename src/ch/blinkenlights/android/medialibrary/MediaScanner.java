@@ -479,9 +479,9 @@ public class MediaScanner implements Handler.Callback {
 			if (album == null)
 				album = "<No Album>";
 
-			String artist = tags.getFirst(MediaMetadataExtractor.ARTIST);
-			if (artist == null)
-				artist = "<No Artist>";
+			String artistsList = tags.getFirst(MediaMetadataExtractor.ARTIST);
+			if (artistsList == null)
+				artistsList = "<No Artist>";
 
 			String discNumber = tags.getFirst(MediaMetadataExtractor.DISC_NUMBER);
 			if (discNumber == null)
@@ -531,23 +531,42 @@ public class MediaScanner implements Handler.Callback {
 				// orphaned artist id.
 				v.clear();
 				v.put(MediaLibrary.AlbumColumns.PRIMARY_ARTIST_ID, albumartistId);
-				v.put(MediaLibrary.AlbumColumns.PRIMARY_ALBUM_YEAR,tags.getFirst(MediaMetadataExtractor.YEAR));
-				mBackend.update(MediaLibrary.TABLE_ALBUMS, v, MediaLibrary.AlbumColumns._ID+"=?", new String[]{ Long.toString(albumId) });
+				v.put(MediaLibrary.AlbumColumns.PRIMARY_ALBUM_YEAR, tags.getFirst(MediaMetadataExtractor.YEAR));
+				mBackend.update(MediaLibrary.TABLE_ALBUMS, v, MediaLibrary.AlbumColumns._ID + "=?", new String[]{Long.toString(albumId)});
 			}
 
-			long artistId = MediaLibrary.hash63(artist);
+			long artistsListId = MediaLibrary.hash63(artistsList);
 
 			v.clear();
-			v.put(MediaLibrary.ContributorColumns._ID, artistId);
-			v.put(MediaLibrary.ContributorColumns._CONTRIBUTOR, artist);
-			v.put(MediaLibrary.ContributorColumns._CONTRIBUTOR_SORT, MediaLibrary.keyFor(artist));
+			v.put(MediaLibrary.ContributorColumns._ID, artistsListId);
+			v.put(MediaLibrary.ContributorColumns._CONTRIBUTOR, artistsList);
+			v.put(MediaLibrary.ContributorColumns._CONTRIBUTOR_SORT, MediaLibrary.keyFor(artistsList));
 			mBackend.insert(MediaLibrary.TABLE_CONTRIBUTORS, null, v);
 
 			v.clear();
-			v.put(MediaLibrary.ContributorSongColumns._CONTRIBUTOR_ID, artistId);
+			v.put(MediaLibrary.ContributorSongColumns._CONTRIBUTOR_ID, artistsListId);
 			v.put(MediaLibrary.ContributorSongColumns.SONG_ID, songId);
-			v.put(MediaLibrary.ContributorSongColumns.ROLE, MediaLibrary.ROLE_ARTIST);
+			v.put(MediaLibrary.ContributorSongColumns.ROLE, MediaLibrary.ROLE_ARTISTSLIST);
 			mBackend.insert(MediaLibrary.TABLE_CONTRIBUTORS_SONGS, null, v);
+
+			// See http://id3.org/id3v2.3.0#Text_information_frames_-_details
+			// There may be more than one artist
+			String[] artistParts = artistsList.split("/");
+			for (String artistPart : artistParts) {
+				long artistPartId = MediaLibrary.hash63(artistPart);
+
+				v.clear();
+				v.put(MediaLibrary.ContributorColumns._ID, artistPartId);
+				v.put(MediaLibrary.ContributorColumns._CONTRIBUTOR, artistPart);
+				v.put(MediaLibrary.ContributorColumns._CONTRIBUTOR_SORT, MediaLibrary.keyFor(artistPart));
+				mBackend.insert(MediaLibrary.TABLE_CONTRIBUTORS, null, v);
+
+				v.clear();
+				v.put(MediaLibrary.ContributorSongColumns._CONTRIBUTOR_ID, artistPartId);
+				v.put(MediaLibrary.ContributorSongColumns.SONG_ID, songId);
+				v.put(MediaLibrary.ContributorSongColumns.ROLE, MediaLibrary.ROLE_INDIVIDUALARTIST);
+				mBackend.insert(MediaLibrary.TABLE_CONTRIBUTORS_SONGS, null, v);
+			}
 
 			v.clear();
 			v.put(MediaLibrary.ContributorColumns._ID,               albumartistId);
