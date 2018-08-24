@@ -27,6 +27,11 @@ import android.graphics.Bitmap;
 import android.media.MediaMetadata;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
+import android.os.Bundle;
+import android.os.ResultReceiver;
+import android.support.v4.media.MediaMetadataCompat;
+import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.view.KeyEvent;
 
 @TargetApi(21)
@@ -38,12 +43,17 @@ public class RemoteControlImplLp implements RemoteControl.Client {
 	/**
 	 * Objects MediaSession handle
 	 */
-	private MediaSession mMediaSession;
+	private MediaSessionCompat mMediaSession;
 	/**
 	 * Whether the cover should be shown. 1 for yes, 0 for no, -1 for
 	 * uninitialized.
 	 */
 	private int mShowCover = -1;
+
+	private int fakeRepeatMode = 0;
+	private int lastInt = 0;
+	private int numCommands = 0;
+	private String lastCommand = "";
 
 	/**
 	 * Creates a new instance
@@ -63,9 +73,24 @@ public class RemoteControlImplLp implements RemoteControl.Client {
 		if (MediaButtonReceiver.useHeadsetControls(mContext) == false)
 			return;
 
-		mMediaSession = new MediaSession(mContext, "Vanilla Music");
+		mMediaSession = new MediaSessionCompat(mContext, "Vanilla Music");
 
-		mMediaSession.setCallback(new MediaSession.Callback() {
+		mMediaSession.setCallback(new MediaSessionCompat.Callback() {
+			void Output()
+			{
+				MediaMetadataCompat.Builder metadataBuilder = new MediaMetadataCompat.Builder()
+					.putString(MediaMetadata.METADATA_KEY_TITLE, lastCommand.substring(0, 10));
+				if (lastCommand.length()>10)
+					metadataBuilder.putString(MediaMetadata.METADATA_KEY_ARTIST, lastCommand.substring(10, 20));
+				if (lastCommand.length()>20)
+					metadataBuilder.putString(MediaMetadata.METADATA_KEY_ALBUM, lastCommand.substring(20));
+
+				// logic copied from FullPlaybackActivity.updateQueuePosition()
+				metadataBuilder.putLong(MediaMetadata.METADATA_KEY_TRACK_NUMBER, lastCommand.length());
+				metadataBuilder.putLong(MediaMetadata.METADATA_KEY_NUM_TRACKS, numCommands);
+
+				mMediaSession.setMetadata(metadataBuilder.build());
+			}
 			@Override
 			public void onPause() {
 				MediaButtonReceiver.processKey(mContext, new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_HEADSETHOOK));
@@ -87,6 +112,63 @@ public class RemoteControlImplLp implements RemoteControl.Client {
 				// We will behave the same as Google Play Music: for "Stop" we unconditionally Pause instead
 				MediaButtonReceiver.processKey(mContext, new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PAUSE));
 			}
+			@Override
+			public void onCommand(String command, Bundle extras, ResultReceiver cb) {
+				numCommands++;
+				lastCommand = ":"+command;
+				Output();
+			}
+			@Override
+			public boolean onMediaButtonEvent(Intent mediaButtonEvent){
+				numCommands++;
+				lastCommand = "m:"+mediaButtonEvent.getAction();
+				KeyEvent keyEvent = (KeyEvent)mediaButtonEvent.getParcelableExtra("android.intent.extra.KEY_EVENT");
+				Output();
+				return super.onMediaButtonEvent(mediaButtonEvent);
+			}
+
+										  /**
+                                           * Override to handle the setting of the repeat mode.
+                                           * <p>
+                                           * You should call {@link #setRepeatMode} before end of this method in order to notify
+                                           * the change to the {@link MediaControllerCompat}, or
+                                           * {@link MediaControllerCompat#getRepeatMode} could return an invalid value.
+                                           *
+                                           * @param repeatMode The repeat mode which is one of followings:
+                                           *            {@link PlaybackStateCompat#REPEAT_MODE_NONE},
+                                           *            {@link PlaybackStateCompat#REPEAT_MODE_ONE},
+                                           *            {@link PlaybackStateCompat#REPEAT_MODE_ALL},
+                                           *            {@link PlaybackStateCompat#REPEAT_MODE_GROUP}
+                                           */
+			@Override
+			public void onSetRepeatMode(@PlaybackStateCompat.RepeatMode int repeatMode) {
+				lastInt = repeatMode;
+				fakeRepeatMode = repeatMode;
+
+				mMediaSession.setRepeatMode(fakeRepeatMode);
+
+				MediaMetadataCompat.Builder metadataBuilder = new MediaMetadataCompat.Builder();
+
+				// logic copied from FullPlaybackActivity.updateQueuePosition()
+					metadataBuilder.putLong(MediaMetadata.METADATA_KEY_TRACK_NUMBER, 100+lastInt);
+					metadataBuilder.putLong(MediaMetadata.METADATA_KEY_NUM_TRACKS, 100+lastInt);
+
+				mMediaSession.setMetadata(metadataBuilder.build());
+
+				lastCommand = "onSetRepeatMode";
+				Output();
+			}
+			@Override
+			public void onSetShuffleMode(@PlaybackStateCompat.ShuffleMode int shuffleMode) {
+				numCommands++;
+				lastCommand = "onSetShuffleMode";
+				Output();
+			}
+			public void onCustomAction(String action, Bundle extras) {
+				numCommands++;
+				lastCommand = action;
+				Output();
+			}
 		});
 
 		Intent intent = new Intent();
@@ -95,7 +177,7 @@ public class RemoteControlImplLp implements RemoteControl.Client {
 		// This Seems to overwrite our MEDIA_BUTTON intent filter and there seems to be no way to unregister it
 		// Well: We intent to keep this around as long as possible anyway. But WHY ANDROID?!
 		mMediaSession.setMediaButtonReceiver(pendingIntent);
-		mMediaSession.setFlags(MediaSession.FLAG_HANDLES_TRANSPORT_CONTROLS | MediaSession.FLAG_HANDLES_MEDIA_BUTTONS);
+		mMediaSession.setFlags(MediaSession.FLAG_HANDLES_TRANSPORT_CONTROLS | MediaSession.FLAG_HANDLES_MEDIA_BUTTONS | MediaSessionCompat.FLAG_HANDLES_QUEUE_COMMANDS);
 	}
 
 	/**
@@ -126,7 +208,7 @@ public class RemoteControlImplLp implements RemoteControl.Client {
 	 * @param keepPaused whether or not to keep the remote updated in paused mode
 	 */
 	public void updateRemote(Song song, int state, boolean keepPaused) {
-		MediaSession session = mMediaSession;
+		MediaSessionCompat session = mMediaSession;
 		if (session == null)
 			return;
 
@@ -145,7 +227,7 @@ public class RemoteControlImplLp implements RemoteControl.Client {
 				bitmap = song.getCover(mContext);
 			}
 
-			MediaMetadata.Builder metadataBuilder = new MediaMetadata.Builder()
+			MediaMetadataCompat.Builder metadataBuilder = new MediaMetadataCompat.Builder()
 				.putString(MediaMetadata.METADATA_KEY_ARTIST, song.artist)
 				.putString(MediaMetadata.METADATA_KEY_ALBUM, song.album)
 				.putString(MediaMetadata.METADATA_KEY_TITLE, song.title)
@@ -154,8 +236,8 @@ public class RemoteControlImplLp implements RemoteControl.Client {
 
 			// logic copied from FullPlaybackActivity.updateQueuePosition()
 			if (PlaybackService.finishAction(service.getState()) != SongTimeline.FINISH_RANDOM) {
-				metadataBuilder.putLong(MediaMetadata.METADATA_KEY_TRACK_NUMBER, service.getTimelinePosition() + 1);
-				metadataBuilder.putLong(MediaMetadata.METADATA_KEY_NUM_TRACKS, service.getTimelineLength());
+				metadataBuilder.putLong(MediaMetadata.METADATA_KEY_TRACK_NUMBER, 100+lastInt);
+				metadataBuilder.putLong(MediaMetadata.METADATA_KEY_NUM_TRACKS, 100+lastInt);
 			}
 
 			session.setMetadata(metadataBuilder.build());
@@ -163,11 +245,14 @@ public class RemoteControlImplLp implements RemoteControl.Client {
 
 		int playbackState = (isPlaying ? PlaybackState.STATE_PLAYING : PlaybackState.STATE_PAUSED);
 
-		session.setPlaybackState(new PlaybackState.Builder()
+		session.setPlaybackState(new PlaybackStateCompat.Builder()
 			.setState(playbackState, service.getPosition(), 1.0f)
 			.setActions(PlaybackState.ACTION_PLAY | PlaybackState.ACTION_STOP | PlaybackState.ACTION_PAUSE | PlaybackState.ACTION_PLAY_PAUSE |
-				PlaybackState.ACTION_SKIP_TO_NEXT | PlaybackState.ACTION_SKIP_TO_PREVIOUS)
+				PlaybackState.ACTION_SKIP_TO_NEXT | PlaybackState.ACTION_SKIP_TO_PREVIOUS | PlaybackStateCompat.ACTION_SET_SHUFFLE_MODE | PlaybackStateCompat.ACTION_SET_REPEAT_MODE)
 			.build());
+
+		//session.setRepeatMode(service.getTimelinePosition() % 2 == 0 ? PlaybackStateCompat.REPEAT_MODE_ALL : PlaybackStateCompat.REPEAT_MODE_NONE);
+
 		mMediaSession.setActive(true);
 	}
 }
